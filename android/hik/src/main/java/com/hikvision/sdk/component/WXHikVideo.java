@@ -1,10 +1,14 @@
 package com.hikvision.sdk.component;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.pm.ActivityInfo;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -42,6 +46,12 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
 
     String recordVidepath;
 
+    String id;
+    String date;
+    String level;
+    ViewGroup parent;
+    boolean isFullScreen;
+
 
     private int PLAY_WINDOW_ONE = 1;
 
@@ -61,6 +71,12 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
     @Override
     protected void onHostViewInitialized(CustomSurfaceView host) {
         super.onHostViewInitialized(host);
+        host.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                quitWindowFullscreen();
+            }
+        });
 //        mCamera = (SubResourceNodeBean) ((Activity) getInstance().getContext()).getIntent().getSerializableExtra(Constants.IntentKey.CAMERA);
     }
 
@@ -127,45 +143,83 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
         enterWindowFullscreen();
     }
 
+    @JSMethod
+    public void quitFullScrren(){
+        quitWindowFullscreen();
+    }
 
     //全屏
 
     public void enterWindowFullscreen() {
-
+              this.isFullScreen=true;
             ViewGroup vp = (ViewGroup) getHostView().getParent();
             if (vp != null)
                 vp.removeView(getHostView());
-
+            this.parent=vp;
             ViewGroup decorView = (ViewGroup) (ActivityManager.getInstance().getCurrentActivity()).getWindow().getDecorView();
             //.findViewById(Window.ID_ANDROID_CONTENT);
+            SET_LANDSCAPE(getContext());
             decorView.addView(getHostView(), new FrameLayout.LayoutParams(-1, -1));
+            HashMap m=new HashMap();
+            m.put("id",this.id);
+            m.put("level",this.level);
+            realPlay(m,null);
 //            setStateAndMode(currentState, MODE_WINDOW_FULLSCREEN);
 
     }
-//
-//    //退出全屏
-//    @Override
-//    public void quitWindowFullscreen() {
-//        if (currentMode == MODE_WINDOW_FULLSCREEN & checkSpaceOK()) {
-//            if (full_flag)
-//                Util.SET_FULL(getContext());
-//            else
-//                Util.CLEAR_FULL(getContext());
-//            if (orientation_flag)
-//                Util.SET_PORTRAIT(getContext());
-//            else
-//                Util.SET_LANDSCAPE(getContext());
-//
-//            Util.showNavigationBar(getContext(), true);
-//
-//            ViewGroup vp = (ViewGroup) videoView.getParent();
-//            if (vp != null)
-//                vp.removeView(videoView);
-//            addView(videoView, new FrameLayout.LayoutParams(-1, -1));
-//            setStateAndMode(currentState, MODE_WINDOW_NORMAL);
-//        }
-//    }
 
+    //竖屏
+    public static void SET_PORTRAIT(Context context) {
+        scanForActivity(context).setRequestedOrientation
+                (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    public static Activity scanForActivity(Context context) {
+        if (context instanceof Activity) {
+            Activity a = (Activity) context;
+            if (a.getParent() != null)
+                return a.getParent();
+            else
+                return a;
+        } else if (context instanceof ContextWrapper) {
+            return scanForActivity(((ContextWrapper) context).getBaseContext());
+        }
+        throw new IllegalStateException("context得不到activity");
+    }
+
+    //横屏
+    public static void SET_LANDSCAPE(Context context) {
+        scanForActivity(context).setRequestedOrientation
+                (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    }
+
+    //退出全屏
+
+    public void quitWindowFullscreen() {
+        this.isFullScreen=false;
+        if(this.parent==null)
+            return;
+        ViewGroup vp = (ViewGroup) getHostView().getParent();
+        if (vp != null)
+            vp.removeView(getHostView());
+        SET_PORTRAIT(getContext());
+        FrameLayout.LayoutParams lp= new FrameLayout.LayoutParams(-1, -1);
+        getHostView().setLayoutParams(lp);
+        this.parent.addView(getHostView());
+        HashMap m=new HashMap();
+        m.put("id",this.id);
+        m.put("level",this.level);
+        realPlay(m,null);
+    }
+
+    @Override
+    public boolean onActivityBack() {
+        if(this.isFullScreen){
+            quitWindowFullscreen();
+            return false;
+        }
+        return super.onActivityBack();
+    }
 
     @JSMethod
     public void control(HashMap param){
@@ -244,6 +298,8 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
         videoType=0;
         final String id=param.get("id")+"";
         final String level=param.get("level")+"";
+        this.id=id;
+        this.level=level;
 //        if(state!=null){
 //            HashMap m=new HashMap<>();
 //            m.put("err",-1);
@@ -259,6 +315,7 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
                     public void onFailure() {
                         HashMap m=new HashMap<>();
                         m.put("err",1);
+                        if(state!=null)
                         state.invoke(m);
                     }
 
@@ -266,6 +323,7 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
                     public void onSuccess(Object obj) {
                         HashMap m=new HashMap<>();
                         m.put("err",0);
+                        if(state!=null)
                         state.invoke(m);
                     }
                 });
@@ -356,6 +414,8 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
     public void playBack(final HashMap param,final JSCallback callback){
         String id=param.get("id")+"";
         String date=param.get("date")+"";
+        this.id=id;
+        this.date=date;
         this.getCameraInfo(id, new JSCallback() {
             @Override
             public void invoke(Object data) {
