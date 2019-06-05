@@ -20,5 +20,7 @@
 /** 是否是横屏状态 */
 @property (nonatomic, assign) BOOL     isLandscape;
 @property (nonatomic, assign) BOOL                   isFullScreen;
+
+
 @end
 

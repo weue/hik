@@ -226,6 +226,43 @@ VPRecordInfo *recordInfo;
     
 }
 
+-(void)updatePlayBack:(NSMutableDictionary*)param  callback:(WXModuleKeepAliveCallback)callback timeCallback:(WXModuleKeepAliveCallback)timeCallback{
+        NSString *date=param[@"time"];
+    NSDateFormatter *g_formatter = [[NSDateFormatter alloc] init];
+    [g_formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+     NSDate *_date = [g_formatter dateFromString:date];
+    NSTimeInterval interval = [_date timeIntervalSince1970];
+     TIME_STRUCT       startTime;
+      [VideoPlayUtility transformNSTimeInterval:interval  toStruct:&startTime];
+    
+    if ([_playBackManager stopPlayBack]) {
+        [_playBackManager updatePlayBackTime:startTime complete:^(BOOL finish, NSString *message) {
+            NSLog(@"%@:%@",@(finish),message);
+            callback(@{@"finish":@(finish),@"msg":message},true);
+        }];
+    }
+    if (_refreshTimer!=nil) {
+        [_refreshTimer invalidate];
+        _refreshTimer=nil;
+    }
+    self.playbackCallback=timeCallback;
+    _refreshTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(updateUITime:) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:_refreshTimer forMode:NSRunLoopCommonModes];
+//    [_refreshTimer setFireDate:[NSDate distantFuture]];
+    [_refreshTimer fire];
+}
+
+- (void)updateUITime:(NSTimer *)timer {
+    NSTimeInterval osdTime = [_playBackManager getOsdTime];
+   NSDate *date= [NSDate dateWithTimeIntervalSince1970:osdTime];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+    NSString *dateString = [formatter stringFromDate:date];
+    if(_playbackCallback){
+        _playbackCallback(@{@"time":dateString},true);
+    }
+}
+
 
 -(void)operate:(NSMutableDictionary*)param{
     NSInteger command=[@"" add: param[@"command"]].intValue;

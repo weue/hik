@@ -23,9 +23,12 @@
 @property (nonatomic) CGFloat kheight;
 @property (nonatomic) CGRect origin_frame;
 @property (nonatomic, retain) NSString *level;
+@property (nonatomic, retain) NSTimer           *refreshTimer;/**< 定时器*/
+@property (nonatomic)  WXModuleKeepAliveCallback playbackCallback;
 -(void)playBack:(NSMutableDictionary*)param  callback:(WXModuleCallback)callback;
 -(void)realPlay:(NSMutableDictionary*)param callback:(WXModuleCallback)callback;
 -(void)operate:(NSMutableDictionary*)param;
+-(void)updatePlayBack:(NSMutableDictionary*)param  callback:(WXModuleKeepAliveCallback)callback timeCallback:(WXModuleKeepAliveCallback)timeCallback;
 -(int)audio:(BOOL)audio;
 -(int)enableZoom:(BOOL)zoom;
 -(void)stop;

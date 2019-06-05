@@ -17,6 +17,7 @@ WX_PlUGIN_EXPORT_COMPONENT(hikvideo, HikVideo)
 
 @implementation HikVideo
 WX_EXPORT_METHOD(@selector(play:callback:))
+WX_EXPORT_METHOD(@selector(updatePlayBack:callback:timeCallback:))
 WX_EXPORT_METHOD(@selector(control:))
 WX_EXPORT_METHOD(@selector(audio:))
 WX_EXPORT_METHOD(@selector(enableZoom:))
@@ -68,6 +69,12 @@ WX_EXPORT_METHOD(@selector(enterFullScreen))
     }
 }
 
+-(void)updatePlayBack:(NSMutableDictionary*)param  callback:(WXModuleKeepAliveCallback)callback timeCallback:(WXModuleKeepAliveCallback)timeCallback{
+    
+    [self.vc updatePlayBack:param callback:callback timeCallback:timeCallback];
+ 
+}
+
 
 
 -(void)control:(NSMutableDictionary*)param{
@@ -114,6 +121,7 @@ WX_EXPORT_METHOD(@selector(enterFullScreen))
 - (void)realPlayCallBack:(PLAY_STATE)playState realManager:(RealPlayManager *)realPlayManager{
     
 }
+
 
 
 @end
