@@ -254,7 +254,7 @@ VPRecordInfo *recordInfo;
 
 - (void)updateUITime:(NSTimer *)timer {
     NSTimeInterval osdTime = [_playBackManager getOsdTime];
-   NSDate *date= [NSDate dateWithTimeIntervalSince1970:osdTime];
+   NSDate *date= [NSDate dateWithTimeIntervalSince1970:osdTime-8*3600];
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
     NSString *dateString = [formatter stringFromDate:date];
