@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -160,6 +161,7 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
             this.parent=vp;
             ViewGroup decorView = (ViewGroup) (ActivityManager.getInstance().getCurrentActivity()).getWindow().getDecorView();
             //.findViewById(Window.ID_ANDROID_CONTENT);
+            vp.setBackgroundColor(Color.RED);
             SET_LANDSCAPE(getContext());
             decorView.addView(getHostView(), new FrameLayout.LayoutParams(-1, -1));
             HashMap m=new HashMap();
