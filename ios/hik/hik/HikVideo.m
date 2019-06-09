@@ -27,7 +27,7 @@ WX_EXPORT_METHOD(@selector(capture:callback:))
 WX_EXPORT_METHOD(@selector(startRecord:))
 WX_EXPORT_METHOD(@selector(stopRecord:))
 WX_EXPORT_METHOD(@selector(enterFullScreen))
-
+WX_EXPORT_METHOD(@selector(getPlayTime:))
 
 
 
@@ -121,7 +121,9 @@ WX_EXPORT_METHOD(@selector(enterFullScreen))
 - (void)realPlayCallBack:(PLAY_STATE)playState realManager:(RealPlayManager *)realPlayManager{
     
 }
-
+-(void)getPlayTime:(WXModuleKeepAliveCallback)callback{
+    [self.vc getPlayTime:callback];
+}
 
 
 @end
