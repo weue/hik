@@ -213,6 +213,7 @@ VPRecordInfo *recordInfo;
     NSString *_id=param[@"id"];
     NSString *date=param[@"date"];
      self._id=_id;
+     self.date=date;
     NSDateFormatter *g_formatter = [[NSDateFormatter alloc] init];
     [g_formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
     NSDate *_date = [g_formatter dateFromString:date];
@@ -368,15 +369,19 @@ VPRecordInfo *recordInfo;
             [self.realManager stopTalking];
         });
     }
+    if(self.realManager)
     [self.realManager stopRealPlay];
+    if(self.playBackManager){
+        [self.playBackManager stopPlayBack];
+    }
 }
 
 - (void)resetRealPlay {
     if (self._id != nil) {
         if(self.videoType==0){
-             [self realPlay:self._id callback:nil];
+            [self realPlay:@{@"id":self._id,@"level":self.level} callback:nil];
         }else{
-             [self playBack:self._id callback:nil];
+             [self playBack:@{@"id":self._id,@"date":self.date} callback:nil];
         }
        
     }

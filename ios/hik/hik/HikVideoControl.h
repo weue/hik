@@ -19,6 +19,7 @@
 @property (nonatomic, retain) PlayView *player;
 @property (nonatomic, retain) UIView *parent;
 @property (nonatomic, retain) NSString *_id;
+@property (nonatomic, retain) NSString *date;
 @property (nonatomic) BOOL isFullScreen;
 @property (nonatomic) CGFloat kheight;
 @property (nonatomic) CGRect origin_frame;
