@@ -121,7 +121,7 @@ WX_EXPORT_METHOD(@selector(getPlayTime:))
 - (void)realPlayCallBack:(PLAY_STATE)playState realManager:(RealPlayManager *)realPlayManager{
     
 }
--(void)getPlayTime:(WXModuleKeepAliveCallback)callback{
+-(void)getPlayTime:(WXModuleCallback)callback{
     [self.vc getPlayTime:callback];
 }
 

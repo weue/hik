@@ -246,11 +246,11 @@ VPRecordInfo *recordInfo;
         [_refreshTimer invalidate];
         _refreshTimer=nil;
     }
-    self.playbackCallback=timeCallback;
-    _refreshTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(updateUITime:) userInfo:nil repeats:YES];
-    [[NSRunLoop currentRunLoop] addTimer:_refreshTimer forMode:NSRunLoopCommonModes];
+//    self.playbackCallback=timeCallback;
+//    _refreshTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(updateUITime:) userInfo:nil repeats:YES];
+//    [[NSRunLoop currentRunLoop] addTimer:_refreshTimer forMode:NSRunLoopCommonModes];
 //    [_refreshTimer setFireDate:[NSDate distantFuture]];
-    [_refreshTimer fire];
+//    [_refreshTimer fire];
 }
 
 - (void)updateUITime:(NSTimer *)timer {
@@ -265,12 +265,12 @@ VPRecordInfo *recordInfo;
     }
 }
 
--(void)getPlayTime:(WXModuleKeepAliveCallback)callback{
+-(void)getPlayTime:(WXModuleCallback)callback{
     NSTimeInterval osdTime = [_playBackManager getOsdTime];
     NSDate *date= [NSDate dateWithTimeIntervalSince1970:osdTime-8*3600];
     NSTimeInterval timeInterval = [date timeIntervalSince1970];
     if(callback)
-    callback(@{@"time":@(timeInterval)},true);
+    callback(@{@"time":@(timeInterval)});
     
 }
 

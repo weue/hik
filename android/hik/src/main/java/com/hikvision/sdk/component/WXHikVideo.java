@@ -13,8 +13,10 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.farwolf.util.ActivityManager;
+import com.farwolf.util.DateTool;
 import com.farwolf.weex.annotation.WeexComponent;
 import com.farwolf.weex.util.Const;
+import com.hik.mcrsdk.rtsp.RtspClient;
 import com.hikvision.sdk.VMSNetSDK;
 import com.hikvision.sdk.consts.SDKConstant;
 import com.hikvision.sdk.net.bean.CameraInfo;
@@ -355,7 +357,9 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
         VMSNetSDK.getInstance().queryRecordSegment(PLAY_WINDOW_ONE, mCameraInfo, queryStartTime, queryEndTime, mRecordPos[0], mGuids[0], new OnVMSNetSDKBusiness() {
             @Override
             public void onFailure() {
-
+                HashMap m=new HashMap();
+                m.put("err",1);
+                callback.invoke(m);
             }
 
             @Override
@@ -365,20 +369,23 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
                     if (null != mRecordInfo.getSegmentList() && 0 < mRecordInfo.getSegmentList().size()) {
                         RecordSegment mRecordSegment = mRecordInfo.getSegmentList().get(0);
                         //级联设备的时候使用录像片段中的时间
+                        HashMap m=new HashMap();
+                        m.put("recordInfo",mRecordInfo);
                         if (SDKConstant.CascadeFlag.CASCADE == mCameraInfo.getCascadeFlag()) {
                             Calendar  mEndTime = SDKUtil.convertTimeString(mRecordSegment.getEndTime());
                             Calendar mStartTime = SDKUtil.convertTimeString(mRecordSegment.getBeginTime());
                             Calendar  mFirstStartTime = mStartTime;
-                            HashMap m=new HashMap();
                             m.put("start",mStartTime);
                             m.put("end",mEndTime);
-                            m.put("recordInfo",mRecordInfo);
-//                            m.put("start",mStartTime);
-                            callback.invoke(m);
 
+//                            m.put("start",mStartTime);
                         }
+                        callback.invoke(m);
 //                        mMessageHandler.sendEmptyMessage(QUERY_SUCCESS);
                     } else {
+                        HashMap m=new HashMap();
+                        m.put("err",1);
+                        callback.invoke(m);
 //                        mMessageHandler.sendEmptyMessage(QUERY_FAILURE);
                     }
                 }
@@ -389,7 +396,7 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
     /**
      * 获取监控点详细信息
      */
-    private void getCameraInfo(String id,JSCallback callback) {
+    private void getCameraInfo(String id,final JSCallback callback) {
 
 
         VMSNetSDK.getInstance().getPlayBackCameraInfo(PLAY_WINDOW_ONE, id, new OnVMSNetSDKBusiness() {
@@ -404,11 +411,28 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
                     CameraInfo  mCameraInfo = (CameraInfo) obj;
                     HashMap m=new HashMap();
                     m.put("info",mCameraInfo);
+                    if(callback!=null)
+                    callback.invoke(m);
                 }
             }
         });
     }
 
+
+    @JSMethod
+    public void updatePlayBack(final HashMap param,final JSCallback callback){
+
+       this.playBack(param,callback);
+    }
+
+    @JSMethod
+    public void getPlayTime(JSCallback callback){
+        long osd = VMSNetSDK.getInstance().getOSDTimeOpt(PLAY_WINDOW_ONE);
+          HashMap m=new HashMap();
+          m.put("time",osd);
+          callback.invoke(m);
+
+    }
 
 
     public void playBack(final HashMap param,final JSCallback callback){
@@ -420,14 +444,17 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
             @Override
             public void invoke(Object data) {
                final  CameraInfo info=(CameraInfo)((HashMap)data).get("info");
-                String date=param.get("date")+"";
+               final String date=param.get("date")+"";
                 queryRecordSegment(date, info, new JSCallback() {
                     @Override
                     public void invoke(Object data) {
                         final  CameraInfo info=(CameraInfo)((HashMap)data).get("info");
                         final  RecordInfo recordInfo=(RecordInfo)((HashMap)data).get("recordInfo");
-                        final  Calendar start=(Calendar)((HashMap)data).get("start");
-                        final  Calendar end=(Calendar)((HashMap)data).get("end");
+                        Date fdate= DateTool.getDate(date,"yyyy-MM-dd HH:mm:ss");
+                        final  Calendar start=Calendar.getInstance();
+                        final  Calendar end=Calendar.getInstance();
+                         start.setTime(fdate);
+                         end.setTime(fdate);
                         CustomSurfaceView cs= getHostView();
                         VMSNetSDK.getInstance().startPlayBackOpt(PLAY_WINDOW_ONE, cs, recordInfo.getSegmentListPlayUrl(), start, end, new OnVMSNetSDKBusiness() {
                             @Override
@@ -442,15 +469,20 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
                             public void onSuccess(Object obj) {
 //                mMessageHandler.sendEmptyMessage(START_SUCCESS);
                                 HashMap m=new HashMap<>();
+                                m.put("finish",false);
                                 m.put("err",0);
                                 callback.invoke(m);
                             }
 
                             @Override
                             public void onStatusCallback(int status) {
-                                HashMap m=new HashMap<>();
-                                m.put("err",2);
-                                callback.invoke(m);
+
+                                if (status == RtspClient.RTSPCLIENT_MSG_PLAYBACK_FINISH) {
+                                    HashMap m=new HashMap<>();
+                                    m.put("err",0);
+                                    m.put("finish",true);
+                                    callback.invoke(m);
+                                }
                             }
                         });
                     }
