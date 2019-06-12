@@ -43,7 +43,7 @@ static dispatch_queue_t video_intercom_queue() {
     self.kheight=self.view.frame.size.height;
     self.origin_frame=self.parent.frame;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stopRealPlay) name:UIApplicationDidEnterBackgroundNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetRealPlay) name:UIApplicationDidBecomeActiveNotification object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetRealPlay) name:UIApplicationDidBecomeActiveNotification object:nil];
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChanged:) name:UIDeviceOrientationDidChangeNotification object:[UIDevice currentDevice]];
     [self.view addClick:^{
