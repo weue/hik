@@ -178,6 +178,9 @@ VPRecordInfo *recordInfo;
     self.videoType=0;
     self._id=param[@"id"];
      self.level=param[@"level"];
+    if(self.level==nil){
+        self.level=@"high";
+    }
     PlayView *player=self.player;
 //    VP_STREAM_TYPE g_currentQuality = STREAM_MAG;
     [_realManager stopRealPlay];
@@ -378,9 +381,16 @@ VPRecordInfo *recordInfo;
 
 - (void)resetRealPlay {
     if (self._id != nil) {
+        
         if(self.videoType==0){
+            if(self.level==nil){
+                self.level=@"high";
+            }
             [self realPlay:@{@"id":self._id,@"level":self.level} callback:nil];
         }else{
+            if(self.date==nil){
+                return;
+            }
              [self playBack:@{@"id":self._id,@"date":self.date} callback:nil];
         }
        

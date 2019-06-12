@@ -41,7 +41,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 @WeexComponent(name="hikvideo")
-public class WXHikVideo extends WXComponent<CustomSurfaceView> implements SurfaceHolder.Callback{
+public class WXHikVideo extends WXComponent<FrameLayout> implements SurfaceHolder.Callback{
 
 //    private SubResourceNodeBean mCamera;
 
@@ -54,6 +54,8 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
     String level;
     ViewGroup parent;
     boolean isFullScreen;
+    CustomSurfaceView videoView;
+    FrameLayout container;
 
 
     private int PLAY_WINDOW_ONE = 1;
@@ -64,19 +66,28 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
     }
 
 
+
     @Override
-    protected CustomSurfaceView initComponentHostView(@NonNull Context context) {
+    protected FrameLayout initComponentHostView(@NonNull Context context) {
+        FrameLayout f=new FrameLayout(context);
+        FrameLayout container=new FrameLayout(context);
         CustomSurfaceView c= new CustomSurfaceView(context);
         c.getHolder().addCallback(this);
-        return c;
+        container.addView(c,new FrameLayout.LayoutParams(-1, -1));
+        f.addView(container,new FrameLayout.LayoutParams(-1, -1));
+        container.setBackgroundColor(Color.BLACK);
+        videoView=c;
+        this.container=container;
+        return f;
     }
 
     @Override
-    protected void onHostViewInitialized(CustomSurfaceView host) {
+    protected void onHostViewInitialized(FrameLayout host) {
         super.onHostViewInitialized(host);
-        host.setOnClickListener(new View.OnClickListener() {
+        container.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(isFullScreen())
                 quitWindowFullscreen();
             }
         });
@@ -155,20 +166,26 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
 
     public void enterWindowFullscreen() {
               this.isFullScreen=true;
-            ViewGroup vp = (ViewGroup) getHostView().getParent();
+            ViewGroup vp = (ViewGroup) container.getParent();
             if (vp != null)
-                vp.removeView(getHostView());
+                vp.removeView(container);
             this.parent=vp;
             ViewGroup decorView = (ViewGroup) (ActivityManager.getInstance().getCurrentActivity()).getWindow().getDecorView();
             //.findViewById(Window.ID_ANDROID_CONTENT);
             vp.setBackgroundColor(Color.RED);
             SET_LANDSCAPE(getContext());
-            decorView.addView(getHostView(), new FrameLayout.LayoutParams(-1, -1));
+            decorView.addView(container, new FrameLayout.LayoutParams(-1, -1));
             HashMap m=new HashMap();
             m.put("id",this.id);
             m.put("level",this.level);
             realPlay(m,null);
 //            setStateAndMode(currentState, MODE_WINDOW_FULLSCREEN);
+
+    }
+
+    public boolean isFullScreen() {
+        ViewGroup decorView = (ViewGroup) (ActivityManager.getInstance().getCurrentActivity()).getWindow().getDecorView();
+       return container.getParent()==decorView;
 
     }
 
@@ -203,13 +220,13 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
         this.isFullScreen=false;
         if(this.parent==null)
             return;
-        ViewGroup vp = (ViewGroup) getHostView().getParent();
+        ViewGroup vp = (ViewGroup) container.getParent();
         if (vp != null)
-            vp.removeView(getHostView());
+            vp.removeView(container);
         SET_PORTRAIT(getContext());
         FrameLayout.LayoutParams lp= new FrameLayout.LayoutParams(-1, -1);
-        getHostView().setLayoutParams(lp);
-        this.parent.addView(getHostView());
+        container.setLayoutParams(lp);
+        this.parent.addView(container);
         HashMap m=new HashMap();
         m.put("id",this.id);
         m.put("level",this.level);
@@ -284,14 +301,14 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
         boolean isZoom =zoom;
         if (isZoom) {
 //
-            getHostView().setOnZoomListener(new CustomSurfaceView.OnZoomListener() {
+            videoView.setOnZoomListener(new CustomSurfaceView.OnZoomListener() {
                 @Override
                 public void onZoomChange(CustomRect original, CustomRect current) {
                     VMSNetSDK.getInstance().zoomLiveOpt(PLAY_WINDOW_ONE, true, original, current);
                 }
             });
         } else {
-            getHostView().setOnZoomListener(null);
+            videoView.setOnZoomListener(null);
             VMSNetSDK.getInstance().zoomLiveOpt(PLAY_WINDOW_ONE, false, null, null);
         }
     }
@@ -313,8 +330,7 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
             @Override
             public void run() {
                 Looper.prepare();
-                CustomSurfaceView cs= getHostView();
-                VMSNetSDK.getInstance().startLiveOpt(PLAY_WINDOW_ONE, id, cs, getVideoLevel(level), new OnVMSNetSDKBusiness() {
+                VMSNetSDK.getInstance().startLiveOpt(PLAY_WINDOW_ONE, id, videoView, getVideoLevel(level), new OnVMSNetSDKBusiness() {
                     @Override
                     public void onFailure() {
                         HashMap m=new HashMap<>();
@@ -457,8 +473,8 @@ public class WXHikVideo extends WXComponent<CustomSurfaceView> implements Surfac
                         final  Calendar end=Calendar.getInstance();
                          start.setTime(fdate);
                          end.setTime(fdate);
-                        CustomSurfaceView cs= getHostView();
-                        VMSNetSDK.getInstance().startPlayBackOpt(PLAY_WINDOW_ONE, cs, recordInfo.getSegmentListPlayUrl(), start, end, new OnVMSNetSDKBusiness() {
+
+                        VMSNetSDK.getInstance().startPlayBackOpt(PLAY_WINDOW_ONE, videoView, recordInfo.getSegmentListPlayUrl(), start, end, new OnVMSNetSDKBusiness() {
                             @Override
                             public void onFailure() {
 //                mMessageHandler.sendEmptyMessage(START_FAILURE);

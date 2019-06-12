@@ -1,7 +1,6 @@
 
 package com.hikvision.sdk.widget;
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -59,17 +58,17 @@ public class CustomSurfaceView extends SurfaceView {
      */
     public CustomSurfaceView(Context context) {
         super(context);
-        setBackgroundColor(Color.RED);
+
     }
 
     public CustomSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setBackgroundColor(Color.RED);
+
     }
 
     public CustomSurfaceView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        setBackgroundColor(Color.RED);
+
     }
 
     /***
