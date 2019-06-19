@@ -21,13 +21,15 @@ WX_EXPORT_METHOD(@selector(updatePlayBack:callback:timeCallback:))
 WX_EXPORT_METHOD(@selector(control:))
 WX_EXPORT_METHOD(@selector(audio:))
 WX_EXPORT_METHOD(@selector(enableZoom:))
-//WX_EXPORT_METHOD(@selector(stop))
+WX_EXPORT_METHOD(@selector(stop))
 WX_EXPORT_METHOD(@selector(pause:))
 WX_EXPORT_METHOD(@selector(capture:callback:))
 WX_EXPORT_METHOD(@selector(startRecord:))
 WX_EXPORT_METHOD(@selector(stopRecord:))
 WX_EXPORT_METHOD(@selector(enterFullScreen))
 WX_EXPORT_METHOD(@selector(getPlayTime:))
+WX_EXPORT_METHOD(@selector(getPlayState:))
+
 
 
 
@@ -45,8 +47,13 @@ WX_EXPORT_METHOD(@selector(getPlayTime:))
         make.edges.equalTo(weakself.view);
     }];
     vc.parent=self.view;
+    vc.controller=self;
     [self.weexInstance.viewController addChildViewController:vc];
     self.vc=vc;
+}
+
+-(void)getPlayState:(WXModuleCallback)callback{
+    callback(@{@"state":@(self.vc.playState)});
 }
 
 -(void)realPlay:(NSMutableDictionary*)param callback:(WXModuleCallback)callback{

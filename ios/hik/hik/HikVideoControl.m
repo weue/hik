@@ -26,7 +26,7 @@ static dispatch_queue_t video_intercom_queue() {
     return url_request_queue;
 }
 @interface HikVideoControl ()
-
+//@property (nonatomic, weak) HikVideo *controller;
 @end
 
 
@@ -35,6 +35,7 @@ static dispatch_queue_t video_intercom_queue() {
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.player=[self createPlayer];
+    self.playState=PLAY_STATE_STOPED;
     [self.view addSubview:self.player];
     __weak typeof (self)weakself=self;
     [self.player mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -52,6 +53,7 @@ static dispatch_queue_t video_intercom_queue() {
             [self enterFullScreen:false];
 //        }
     }];
+  
     // Do any additional setup after loading the view.
 }
 
@@ -298,6 +300,7 @@ VPRecordInfo *recordInfo;
 }
 
 -(int)audio:(BOOL)audio{
+    
     PlayView *player=self.player;
     player.isAudioing=audio;
     if([player isAudioing]){
@@ -336,6 +339,7 @@ VPRecordInfo *recordInfo;
 }
 
 -(void)stop{
+    self.playState=PLAY_STATE_STOPED;
     [_realManager stopRealPlay];
 }
 
@@ -355,7 +359,8 @@ VPRecordInfo *recordInfo;
 
 
 - (void)realPlayCallBack:(PLAY_STATE)playState realManager:(RealPlayManager *)realPlayManager{
-    
+     self.playState=playState;
+     [self.controller fireEvent:@"playState" params:@{@"state":@(playState)}];
 }
 
 #pragma mark  -----程序进入后台和变为活跃时的通知实现
@@ -405,9 +410,17 @@ VPRecordInfo *recordInfo;
             [_realManager stopTalking];
         });
     }
+    if(self.controller)
+    [self.controller fireEvent:@"viewWillDisappear" params:@{}];
     [_realManager stopRealPlay];
+    
 }
 
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    if(self.controller)
+    [self.controller fireEvent:@"viewDidDisappear" params:@{}];
+}
 - (void)playBackCallBack:(PLAY_STATE)playState playBackManager:(PlayBackManager *)playBackManager {
     
     switch (playState) {
@@ -440,7 +453,10 @@ VPRecordInfo *recordInfo;
         default:
             break;
     }
+    self.playState=playState;
+    [self.controller fireEvent:@"playState" params:@{@"state":@(playState)}];
 }
+
 
 
 - (void)beginEnterFullScreen{
