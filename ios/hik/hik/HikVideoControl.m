@@ -168,12 +168,12 @@ VPRecordInfo *recordInfo;
    
     if (result) {
         NSLog(@"截图成功");
+        NSString *oldPath=[PREFIX_SDCARD add:captureInfo.strCapturePath];
+        return oldPath;
     } else {
         NSLog(@"截图失败");
+        return nil;
     }
-    
-    NSString *oldPath=[PREFIX_SDCARD add:captureInfo.strCapturePath];
-    return oldPath;
     //对抓图文件文件的操作,可参照预览视图RealPlayViewController中,对抓图文件的操作处理
 }
 -(void)realPlay:(NSMutableDictionary*)param callback:(WXModuleCallback)callback{
