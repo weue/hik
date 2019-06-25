@@ -23,7 +23,7 @@ WX_EXPORT_METHOD(@selector(audio:))
 WX_EXPORT_METHOD(@selector(enableZoom:))
 WX_EXPORT_METHOD(@selector(stop))
 WX_EXPORT_METHOD(@selector(pause:))
-WX_EXPORT_METHOD(@selector(capture:callback:))
+WX_EXPORT_METHOD(@selector(capture:))
 WX_EXPORT_METHOD(@selector(startRecord:))
 WX_EXPORT_METHOD(@selector(stopRecord:))
 WX_EXPORT_METHOD(@selector(enterFullScreen))
@@ -109,10 +109,14 @@ WX_EXPORT_METHOD(@selector(getPlayState:))
     [self.vc pause:pause];
 }
 
+//视频截图，成功返回code为1，失败为0
 - (void)capture:(WXModuleCallback)callback{
     NSString *path= [self.vc capture:100];
-    if(path!=nil)
-    callback(@{@"path":path});
+    if(path){
+        callback(@{@"path":path,@"code":@1});
+    } else {
+        callback(@{@"code":@0});
+    }
 }
 
 -(void)startRecord:(WXModuleCallback)callback{
