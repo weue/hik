@@ -7,6 +7,7 @@
 
 #import "HikVideo.h"
 #import "farwolf.h"
+#import "farwolf_weex.h"
 #import <WeexPluginLoader/WeexPluginLoader.h>
 
 
@@ -25,10 +26,12 @@ WX_EXPORT_METHOD(@selector(stop))
 WX_EXPORT_METHOD(@selector(pause:))
 WX_EXPORT_METHOD(@selector(capture:))
 WX_EXPORT_METHOD(@selector(startRecord:))
-WX_EXPORT_METHOD(@selector(stopRecord:))
+WX_EXPORT_METHOD(@selector(stopRecord:callback:))
 WX_EXPORT_METHOD(@selector(enterFullScreen))
 WX_EXPORT_METHOD(@selector(getPlayTime:))
 WX_EXPORT_METHOD(@selector(getPlayState:))
+WX_EXPORT_METHOD(@selector(queryRecordInfo:callback:))
+
 
 
 
@@ -65,6 +68,11 @@ WX_EXPORT_METHOD(@selector(getPlayState:))
   [self.vc playBack:param callback:callback];
     
 }
+
+-(void)queryRecordInfo:(NSMutableDictionary*)param callback:(WXModuleCallback)callback{
+    [self.vc queryRecordInfo:param callback:callback];
+}
+
 
 
 -(void)play:(NSMutableDictionary*)param callback:(WXModuleCallback)callback{
@@ -121,14 +129,46 @@ WX_EXPORT_METHOD(@selector(getPlayState:))
 
 -(void)startRecord:(WXModuleCallback)callback{
     int code=   [self.vc startRecord];
+    if(callback)
     callback(@{@"code":@(code)});
 }
 
--(void)stopRecord:(WXModuleCallback)callback{
+-(void)stopRecord:(NSMutableDictionary*)param callback: (WXModuleCallback)callback{
     NSString *path=  [self.vc stopRecord];
+    bool saveToGallery= [[param valueForKey:@"save"] boolValue];
     callback(@{@"path":path});
+    if(saveToGallery){
+        NSString *px=[path replace:PREFIX_SDCARD withString:@""];
+        px=[px replace:@"file://" withString:@""];
+        NSString *head=[px split:@"Documents"][0];
+        head=[head add:@"Library/Caches/"];
+        bool t= [head mkdir];
+//        NSString *npath=[px replace:@"Documents" withString:@"Library/Caches"];
+        NSString *npath=[head add:@"1.mp4"];
+//
+   
+        
+        [[NSFileManager defaultManager] copyItemAtPath:px toPath:npath error:NULL];
+//        [px copyToPath:npath];
+        if (UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(npath)) {
+            //保存视频到相簿
+            UISaveVideoAtPathToSavedPhotosAlbum(npath, self,
+                                                nil, nil);
+        }
+        
+        
+    }
 }
-
+- (BOOL)copyMissingFile:(NSString *)sourcePath toPath:(NSString *)toPath
+{
+    BOOL retVal = YES; // If the file already exists, we'll return success…
+    NSString * finalLocation = [toPath stringByAppendingPathComponent:[sourcePath lastPathComponent]];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:finalLocation])
+    {
+        retVal = [[NSFileManager defaultManager] copyItemAtPath:sourcePath toPath:finalLocation error:NULL];
+    }
+    return retVal;
+}
 - (void)realPlayCallBack:(PLAY_STATE)playState realManager:(RealPlayManager *)realPlayManager{
     
 }

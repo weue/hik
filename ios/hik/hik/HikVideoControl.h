@@ -41,6 +41,7 @@
 -(NSString*)stopRecord;
 - (void)enterFullScreen:(BOOL)isFullScreen;
 -(void)getPlayTime:(WXModuleCallback)callback;
+-(void)queryRecordInfo:(NSMutableDictionary*)param callback:(WXModuleCallback)callback;
 @end
 
  

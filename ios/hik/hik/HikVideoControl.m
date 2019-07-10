@@ -111,6 +111,7 @@ VPRecordInfo *recordInfo;
         NSLog(@"获取录像信息失败");
         return -2;
     }
+//    recordInfo.strRecordPath= [ recordInfo.strRecordPath replace:@"Documents" withString:@"Library/Caches"];
     BOOL finish = false;
     if(self.videoType==0){
         finish = [_realManager startRecord:recordInfo];
@@ -256,6 +257,42 @@ VPRecordInfo *recordInfo;
 //    [[NSRunLoop currentRunLoop] addTimer:_refreshTimer forMode:NSRunLoopCommonModes];
 //    [_refreshTimer setFireDate:[NSDate distantFuture]];
 //    [_refreshTimer fire];
+}
+
+-(void)queryRecordInfo:(NSMutableDictionary*)param callback:(WXModuleCallback)callback{
+    NSString *_id=param[@"id"];
+    NSString *date=param[@"date"];
+    NSDateFormatter *g_formatter = [[NSDateFormatter alloc] init];
+    [g_formatter setDateFormat:@"yyyy-MM"];
+    NSDate *_date = [g_formatter dateFromString:date];
+    [_playBackManager quaryRecordInfo:_id date:_date recordPos:nil complete:^(BOOL finish, NSString *message, CRecordInfo *recordInfo) {
+        
+//        recordInfo.recSegmentList[0].re
+        NSMutableArray *ary=[NSMutableArray new];
+        for( CRecordSegment *seg in recordInfo.recSegmentList){
+            [ary addObject:@{@"start":[self getTime:seg.beginTime],@"end":[self getTime:seg.endTime]}];
+         }
+        callback(@{@"list":ary});
+    } ];
+}
+
+-(NSString*)getTime:(TIME_STRUCT)seg{
+    NSString *year=[self get10:seg.dwYear];
+      NSString *month=[self get10:seg.dwMonth];
+      NSString *day=[self get10:seg.dwDay];
+      NSString *hour=[self get10:seg.dwHour];
+      NSString *min=[self get10:seg.dwMinute];
+      NSString *sec=[self get10:seg.dwSecond];
+    NSString *y= [[[[[year add:@"-"] add:month]add:@"-"]add:day] add:@" "];
+        NSString *d= [[[[hour add:@"-"] add:min]add:@"-"]add:sec] ;
+    return [y add:d];
+}
+
+-(NSString*)get10:(int)code{
+    if(code<10){
+        return [@"0" addInt:code];
+    }
+    return [@"" addInt:code];
 }
 
 - (void)updateUITime:(NSTimer *)timer {
