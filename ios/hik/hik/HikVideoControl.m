@@ -44,7 +44,7 @@ static dispatch_queue_t video_intercom_queue() {
     self.kheight=self.view.frame.size.height;
     self.origin_frame=self.parent.frame;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stopRealPlay) name:UIApplicationDidEnterBackgroundNotification object:nil];
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetRealPlay) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetRealPlay) name:UIApplicationDidBecomeActiveNotification object:nil];
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChanged:) name:UIDeviceOrientationDidChangeNotification object:[UIDevice currentDevice]];
     [self.view addClick:^{
@@ -263,7 +263,7 @@ VPRecordInfo *recordInfo;
     NSString *_id=param[@"id"];
     NSString *date=param[@"date"];
     NSDateFormatter *g_formatter = [[NSDateFormatter alloc] init];
-    [g_formatter setDateFormat:@"yyyy-MM"];
+    [g_formatter setDateFormat:@"yyyy-MM-dd"];
     NSDate *_date = [g_formatter dateFromString:date];
     [_playBackManager quaryRecordInfo:_id date:_date recordPos:nil complete:^(BOOL finish, NSString *message, CRecordInfo *recordInfo) {
         
@@ -413,12 +413,11 @@ VPRecordInfo *recordInfo;
             [self.realManager stopTalking];
         });
     }
-//    if(self.realManager)
-//    [self.realManager stopRealPlay];
-//    if(self.playBackManager){
-//        [self.playBackManager stopPlayBack];
-//    }
-    [_controller fireEvent:@"onEnterBackgrond" params:@{}];
+    if(self.realManager)
+    [self.realManager stopRealPlay];
+    if(self.playBackManager){
+        [self.playBackManager stopPlayBack];
+    }
 }
 
 - (void)resetRealPlay {
