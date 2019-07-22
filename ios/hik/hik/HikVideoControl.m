@@ -298,7 +298,6 @@ VPRecordInfo *recordInfo;
 - (void)updateUITime:(NSTimer *)timer {
     NSTimeInterval osdTime = [_playBackManager getOsdTime];
    NSDate *date= [NSDate dateWithTimeIntervalSince1970:osdTime-8*3600];
-
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
     NSString *dateString = [formatter stringFromDate:date];
@@ -414,11 +413,12 @@ VPRecordInfo *recordInfo;
             [self.realManager stopTalking];
         });
     }
-    if(self.realManager)
-    [self.realManager stopRealPlay];
-    if(self.playBackManager){
-        [self.playBackManager stopPlayBack];
-    }
+//    if(self.realManager)
+//    [self.realManager stopRealPlay];
+//    if(self.playBackManager){
+//        [self.playBackManager stopPlayBack];
+//    }
+    [_controller fireEvent:@"onEnterBackgrond" params:@{}];
 }
 
 - (void)resetRealPlay {
